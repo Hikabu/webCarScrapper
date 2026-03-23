@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/playwright/python:v1.51.0-noble
+
+WORKDIR /server
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+COPY pyproject.toml uv.lock* ./
+RUN uv sync --frozen
+
+RUN uv run playwright install --with-deps
+
+COPY . .
+
+CMD ["sh", "-c", "uv sync --frozen && uv run python -m alembic upgrade head && uv run python -m src.jobs.scheduler"]
